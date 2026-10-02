@@ -32,3 +32,5 @@ Thumbs.db
 # Prisma local artifacts
 *.db
 *.sqlite
+# Prisma generated client
+**/generated/prisma/
