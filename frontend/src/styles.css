@@ -1013,6 +1013,26 @@ textarea {
   }
 }
 
+@media (max-width: 760px) {
+  .sidebar {
+    top: 0;
+    bottom: 0;
+    height: 100dvh;
+  }
+
+  .sidebar nav {
+    flex: 1 1 auto;
+    min-height: 0;
+    overscroll-behavior: contain;
+  }
+
+  .sidebar-bottom {
+    flex: 0 0 auto;
+    margin-top: 0;
+    padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
