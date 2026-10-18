@@ -791,6 +791,7 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(() =>
     window.matchMedia("(min-width: 761px)").matches
   );
+  const [openNavGroup, setOpenNavGroup] = useState("operations");
 
   const [filters, setFilters] = useState<Filters>({
     fromDate: "",
@@ -838,6 +839,7 @@ function App() {
 
   const navGroups = [
     {
+      key: "operations",
       title: "Operations",
       items: [
         { key: "sale", label: lang === "hi" ? "नई बिक्री / बिलिंग" : "New Sale / Billing", icon: "₹" },
@@ -847,6 +849,18 @@ function App() {
       ]
     },
     {
+      key: "accounts-inventory",
+      title: "Accounts & Inventory",
+      items: [
+        { key: "ledger", label: lang === "hi" ? "पार्टी लेजर" : "Party Ledger", icon: "L" },
+        { key: "outstanding", label: lang === "hi" ? "बकाया" : "Outstanding", icon: "O" },
+        { key: "inventory", label: lang === "hi" ? "स्टॉक" : "Inventory / Stock", icon: "I" },
+        { key: "wastage", label: lang === "hi" ? "बर्बादी" : "Wastage", icon: "W" },
+        { key: "expenses-entry", label: lang === "hi" ? "व्यय दर्ज करें" : "Expense Entry", icon: "E" },
+      ]
+    },
+    {
+      key: "masters",
       title: "Masters",
       items: [
         { key: "departments", label: lang === "hi" ? "विभाग" : "Departments", icon: "D" },
@@ -860,19 +874,9 @@ function App() {
       ]
     },
     {
-      title: "Accounts & Inventory",
-      items: [
-        { key: "ledger", label: lang === "hi" ? "पार्टी लेजर" : "Party Ledger", icon: "L" },
-        { key: "outstanding", label: lang === "hi" ? "बकाया" : "Outstanding", icon: "O" },
-        { key: "inventory", label: lang === "hi" ? "स्टॉक" : "Inventory / Stock", icon: "I" },
-        { key: "wastage", label: lang === "hi" ? "बर्बादी" : "Wastage", icon: "W" },
-        { key: "expenses-entry", label: lang === "hi" ? "व्यय दर्ज करें" : "Expense Entry", icon: "E" },
-      ]
-    },
-    {
+      key: "reports",
       title: t(lang, "reports"),
       items: [
-        { key: "dashboard", label: t(lang, "dashboard"), icon: "▦" },
         { key: "sales", label: t(lang, "sales"), icon: "₹" },
         { key: "salesFood", label: t(lang, "salesFood"), icon: "F" },
         { key: "salesDepartment", label: t(lang, "salesDepartment"), icon: "D" },
@@ -917,25 +921,53 @@ function App() {
         </div>
 
         <nav id="app-navigation">
+          <button
+            className={`nav-item ${page === "dashboard" ? "active" : ""}`}
+            onClick={() => {
+              setPage("dashboard");
+              closeSidebarOnMobile();
+            }}
+          >
+            <span className="nav-icon">▦</span>
+            <span>{t(lang, "dashboard")}</span>
+          </button>
           {navGroups.map((group) => (
-            <div key={group.title} className="nav-group">
-              <div className="nav-title">{group.title}</div>
-
-              {group.items.map((item) => (
-                <button
-                  key={item.key}
-                  className={`nav-item ${
-                    page === item.key ? "active" : ""
-                  }`}
-                  onClick={() => {
-                    setPage(item.key);
-                    closeSidebarOnMobile();
-                  }}
-                >
-                  <span className="nav-icon">{item.icon}</span>
-                  <span>{item.label}</span>
-                </button>
-              ))}
+            <div key={group.key} className="nav-group">
+              <button
+                className="nav-title"
+                type="button"
+                aria-expanded={openNavGroup === group.key}
+                aria-controls={`nav-group-${group.key}`}
+                onClick={() =>
+                  setOpenNavGroup((openGroup) =>
+                    openGroup === group.key ? "" : group.key
+                  )
+                }
+              >
+                <span>{group.title}</span>
+                <span className="nav-chevron" aria-hidden="true">
+                  {openNavGroup === group.key ? "−" : "+"}
+                </span>
+              </button>
+              {openNavGroup === group.key && (
+                <div id={`nav-group-${group.key}`}>
+                  {group.items.map((item) => (
+                    <button
+                      key={item.key}
+                      className={`nav-item ${
+                        page === item.key ? "active" : ""
+                      }`}
+                      onClick={() => {
+                        setPage(item.key);
+                        closeSidebarOnMobile();
+                      }}
+                    >
+                      <span className="nav-icon">{item.icon}</span>
+                      <span>{item.label}</span>
+                    </button>
+                  ))}
+                </div>
+              )}
             </div>
           ))}
         </nav>
