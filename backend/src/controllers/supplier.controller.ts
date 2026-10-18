@@ -1,6 +1,7 @@
 import { Response } from "express";
 import { prisma } from "../lib/prisma.js";
 import { AuthenticatedRequest } from "../middleware/auth.middleware.js";
+import { generateCode } from "../lib/generated-code.js";
 
 const getLocalizedText = (
   valueEn?: unknown,
@@ -160,7 +161,6 @@ export const createSupplier = async (
 ) => {
   try {
     const {
-      supplierCode,
       name,
       nameEn,
       nameHi,
@@ -173,37 +173,15 @@ export const createSupplier = async (
       isActive,
     } = req.body;
 
-    const code = String(supplierCode ?? "").trim();
-
     const localizedName = getLocalizedText(
       nameEn ?? name,
       nameHi
     );
 
-    if (!code) {
-      return res.status(400).json({
-        success: false,
-        message: "Supplier code is required.",
-      });
-    }
-
     if (!localizedName.en) {
       return res.status(400).json({
         success: false,
         message: "English supplier name is required.",
-      });
-    }
-
-    const existingCode = await prisma.supplier.findUnique({
-      where: {
-        supplierCode: code,
-      },
-    });
-
-    if (existingCode) {
-      return res.status(409).json({
-        success: false,
-        message: "Supplier code already exists.",
       });
     }
 
@@ -225,7 +203,7 @@ export const createSupplier = async (
 
     const supplier = await prisma.supplier.create({
       data: {
-        supplierCode: code,
+        supplierCode: generateCode("SUP"),
 
         // Legacy English field retained temporarily
         name: localizedName.en,
@@ -315,7 +293,6 @@ export const updateSupplier = async (
     }
 
     const {
-      supplierCode,
       name,
       nameEn,
       nameHi,
@@ -328,10 +305,7 @@ export const updateSupplier = async (
       isActive,
     } = req.body;
 
-    const finalCode =
-      supplierCode !== undefined
-        ? String(supplierCode).trim()
-        : existingSupplier.supplierCode;
+    const finalCode = existingSupplier.supplierCode;
 
     const finalNameEn =
       nameEn !== undefined || name !== undefined

@@ -9,6 +9,29 @@ type SaleItemInput = {
   quantity: number;
 };
 
+const classifiedSaleTypes = [
+  "COMPANY_CREDIT",
+  "HOSPITAL_CREDIT",
+  "HOSPITAL_COUNTER",
+  "SME_COUNTER",
+] as const;
+const legacySaleTypes = [
+  "INDIVIDUAL",
+  "BULK",
+  "DEPARTMENT",
+  "COUNTER",
+] as const;
+const isSaleType = (
+  value: string
+): value is (typeof legacySaleTypes)[number] | (typeof classifiedSaleTypes)[number] =>
+  [...legacySaleTypes, ...classifiedSaleTypes].some(
+    (saleType) => saleType === value
+  );
+const isClassifiedSaleType = (
+  value: string
+): value is (typeof classifiedSaleTypes)[number] =>
+  classifiedSaleTypes.some((saleType) => saleType === value);
+
 const roundMoney = (value: number): number => {
   return Math.round((value + Number.EPSILON) * 100) / 100;
 };
@@ -76,14 +99,7 @@ export const createSale = async (
       });
     }
 
-    const allowedSaleTypes = [
-      "INDIVIDUAL",
-      "BULK",
-      "DEPARTMENT",
-      "COUNTER",
-    ];
-
-    if (!allowedSaleTypes.includes(saleType)) {
+    if (!isSaleType(saleType)) {
       return res.status(400).json({
         success: false,
         message: "Invalid saleType.",
@@ -187,6 +203,13 @@ export const createSale = async (
       });
     }
 
+    if (isClassifiedSaleType(saleType) && !partyId) {
+      return res.status(400).json({
+        success: false,
+        message: "partyId is required for this sale type.",
+      });
+    }
+
     // --------------------------------------------------
     // 3. Database transaction
     // --------------------------------------------------
@@ -217,6 +240,15 @@ export const createSale = async (
           if (!party || !party.isActive) {
             throw new Error(
               "Selected party does not exist or is inactive."
+            );
+          }
+
+          if (
+            isClassifiedSaleType(saleType) &&
+            party.saleType !== saleType
+          ) {
+            throw new Error(
+              "Selected party does not match the sale type."
             );
           }
         }
@@ -463,11 +495,7 @@ export const createSale = async (
             saleDate: transactionDate,
 
             saleType:
-              saleType as
-                | "INDIVIDUAL"
-                | "BULK"
-                | "DEPARTMENT"
-                | "COUNTER",
+              saleType,
 
             status: "POSTED",
 

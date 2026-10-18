@@ -163,7 +163,7 @@ function Login({
 
         {error && <div className="alert error">{error}</div>}
 
-        <label>{t(lang, "username")}</label>
+        <label>{t(lang, "username")}<span className="required-marker" aria-label="required"> *</span></label>
         <input
           value={username}
           onChange={(e) => setUsername(e.target.value)}
@@ -171,7 +171,7 @@ function Login({
           required
         />
 
-        <label>{t(lang, "password")}</label>
+        <label>{t(lang, "password")}<span className="required-marker" aria-label="required"> *</span></label>
         <input
           type="password"
           value={password}

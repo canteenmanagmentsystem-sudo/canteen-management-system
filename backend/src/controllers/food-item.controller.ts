@@ -1,6 +1,7 @@
 
 import { Request, Response } from "express";
 import { prisma } from "../lib/prisma.js";
+import { generateCode } from "../lib/generated-code.js";
 
 export const getFoodItems = async (
   req: Request,
@@ -72,7 +73,6 @@ export const createFoodItem = async (
 ) => {
   try {
     const {
-      itemCode,
       name,
       nameEn,
       nameHi,
@@ -87,17 +87,17 @@ export const createFoodItem = async (
 
     const englishName = String(nameEn ?? name ?? "").trim();
 
-    if (!itemCode || !englishName || !categoryId || !unitId) {
+    if (!englishName || !categoryId || !unitId) {
       return res.status(400).json({
         success: false,
         message:
-          "Item code, English name, category and unit are required.",
+          "English name, category and unit are required.",
       });
     }
 
     const item = await prisma.foodItem.create({
       data: {
-        itemCode: String(itemCode).trim().toUpperCase(),
+        itemCode: generateCode("ITEM"),
 
         // Legacy field
         name: englishName,
@@ -171,4 +171,3 @@ export const createFoodItem = async (
     });
   }
 };
-

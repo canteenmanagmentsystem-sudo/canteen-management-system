@@ -12,6 +12,9 @@ if (!connectionString) {
 
 const adapter = new PrismaPg({
   connectionString,
+  ssl: {
+    rejectUnauthorized: false,
+  },
 });
 
 const prisma = new PrismaClient({
@@ -166,6 +169,7 @@ async function main() {
   const permissionMap = new Map<string, number>();
 
   for (const [code, name, module] of permissions) {
+     console.log(`Seeding permission: ${code}`);
     const permission = await prisma.permission.upsert({
       where: {
         code,

@@ -25,6 +25,13 @@ enum PartyType {
   OTHER
 }
 
+enum PartySaleType {
+  COMPANY_CREDIT
+  HOSPITAL_CREDIT
+  HOSPITAL_COUNTER
+  SME_COUNTER
+}
+
 enum Gender {
   MALE
   FEMALE
@@ -36,6 +43,10 @@ enum SaleType {
   BULK
   DEPARTMENT
   COUNTER
+  COMPANY_CREDIT
+  HOSPITAL_CREDIT
+  HOSPITAL_COUNTER
+  SME_COUNTER
 }
 
 enum SaleStatus {
@@ -240,6 +251,8 @@ model Party {
   partyNameHi String? @db.VarChar(200)
 
   partyType PartyType
+
+  saleType PartySaleType?
 
   departmentId Int?
   department   Department? @relation(fields: [departmentId], references: [id])

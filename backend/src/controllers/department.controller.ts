@@ -1,6 +1,7 @@
 
 import { Request, Response } from "express";
 import { prisma } from "../lib/prisma.js";
+import { generateCode } from "../lib/generated-code.js";
 
 export const getDepartments = async (
   req: Request,
@@ -100,7 +101,6 @@ export const createDepartment = async (
 ) => {
   try {
     const {
-      code,
       name,
       nameEn,
       nameHi,
@@ -111,16 +111,16 @@ export const createDepartment = async (
 
     const englishName = String(nameEn ?? name ?? "").trim();
 
-    if (!code || !englishName) {
+    if (!englishName) {
       return res.status(400).json({
         success: false,
-        message: "Department code and English name are required.",
+        message: "English department name is required.",
       });
     }
 
     const department = await prisma.department.create({
       data: {
-        code: String(code).trim().toUpperCase(),
+        code: generateCode("DEPT"),
 
         // Legacy field
         name: englishName,
@@ -181,7 +181,6 @@ export const updateDepartment = async (
     const id = Number(req.params.id);
 
     const {
-      code,
       name,
       nameEn,
       nameHi,
@@ -191,10 +190,6 @@ export const updateDepartment = async (
     } = req.body;
 
     const updateData: any = {};
-
-    if (code !== undefined) {
-      updateData.code = String(code).trim().toUpperCase();
-    }
 
     if (nameEn !== undefined || name !== undefined) {
       const englishName = String(nameEn ?? name).trim();
@@ -304,4 +299,3 @@ export const deleteDepartment = async (
     });
   }
 };
-

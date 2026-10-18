@@ -1,3 +1,4 @@
+
 import "dotenv/config";
 import { PrismaPg } from "@prisma/adapter-pg";
 import { PrismaClient } from "../../generated/prisma/client.js";
@@ -8,8 +9,19 @@ if (!connectionString) {
   throw new Error("DATABASE_URL is not configured.");
 }
 
+const isRenderDatabase = connectionString.includes(
+  ".oregon-postgres.render.com"
+);
+
 const adapter = new PrismaPg({
   connectionString,
+  ...(isRenderDatabase
+    ? {
+        ssl: {
+          rejectUnauthorized: false,
+        },
+      }
+    : {}),
 });
 
 export const prisma = new PrismaClient({

@@ -1,6 +1,7 @@
 
 import { Request, Response } from "express";
 import { prisma } from "../lib/prisma.js";
+import { generateCode } from "../lib/generated-code.js";
 
 export const getParties = async (
   req: Request,
@@ -77,11 +78,11 @@ export const createParty = async (
 ) => {
   try {
     const {
-      partyCode,
       partyName,
       partyNameEn,
       partyNameHi,
       partyType,
+      saleType,
       departmentId,
       mobile,
       email,
@@ -93,17 +94,17 @@ export const createParty = async (
       partyNameEn ?? partyName ?? ""
     ).trim();
 
-    if (!partyCode || !englishPartyName || !partyType) {
+    if (!englishPartyName || !saleType) {
       return res.status(400).json({
         success: false,
         message:
-          "Party code, English party name and party type are required.",
+          "English party name and sale type are required.",
       });
     }
 
     const party = await prisma.party.create({
       data: {
-        partyCode: String(partyCode).trim().toUpperCase(),
+        partyCode: generateCode("PARTY"),
 
         // Legacy field
         partyName: englishPartyName,
@@ -115,7 +116,8 @@ export const createParty = async (
             ? String(partyNameHi).trim()
             : null,
 
-        partyType,
+        partyType: partyType || "OTHER",
+        saleType,
 
         departmentId:
           departmentId !== undefined &&
@@ -220,6 +222,7 @@ export const updateParty = async (
       partyNameEn,
       partyNameHi,
       partyType,
+      saleType,
       departmentId,
       mobile,
       email,
@@ -251,6 +254,10 @@ export const updateParty = async (
 
     if (partyType !== undefined) {
       updateData.partyType = partyType;
+    }
+
+    if (saleType !== undefined) {
+      updateData.saleType = saleType;
     }
 
     if (departmentId !== undefined) {
@@ -347,4 +354,3 @@ export const deleteParty = async (
     });
   }
 };
-

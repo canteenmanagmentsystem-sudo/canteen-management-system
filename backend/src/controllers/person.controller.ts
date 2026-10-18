@@ -1,6 +1,7 @@
 
 import { Request, Response } from "express";
 import { prisma } from "../lib/prisma.js";
+import { generateCode } from "../lib/generated-code.js";
 
 export const getPersons = async (
   req: Request,
@@ -78,7 +79,6 @@ export const createPerson = async (
 ) => {
   try {
     const {
-      employeeCode,
       name,
       nameEn,
       nameHi,
@@ -100,9 +100,7 @@ export const createPerson = async (
 
     const person = await prisma.person.create({
       data: {
-        employeeCode: employeeCode
-          ? String(employeeCode).trim()
-          : null,
+        employeeCode: generateCode("EMP"),
 
         // Legacy field
         name: englishName,
