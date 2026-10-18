@@ -788,12 +788,26 @@ function App() {
   const [page, setPage] = useState<
     "dashboard" | ReportKey | string
   >("dashboard");
+  const [sidebarOpen, setSidebarOpen] = useState(() =>
+    window.matchMedia("(min-width: 761px)").matches
+  );
 
   const [filters, setFilters] = useState<Filters>({
     fromDate: "",
     toDate: "",
     status: "POSTED"
   });
+
+  useEffect(() => {
+    const mediaQuery = window.matchMedia("(min-width: 761px)");
+    const handleViewportChange = (event: MediaQueryListEvent) => {
+      setSidebarOpen(event.matches);
+    };
+
+    mediaQuery.addEventListener("change", handleViewportChange);
+    return () =>
+      mediaQuery.removeEventListener("change", handleViewportChange);
+  }, []);
 
   useEffect(() => {
     const handler = () => setAuthenticated(false);
@@ -873,9 +887,27 @@ function App() {
     }
   ];
 
+  const closeSidebarOnMobile = () => {
+    if (window.matchMedia("(max-width: 760px)").matches) {
+      setSidebarOpen(false);
+    }
+  };
+
   return (
-    <div className="app-shell">
-      <aside className="sidebar">
+    <div
+      className={`app-shell ${
+        sidebarOpen ? "sidebar-open" : "sidebar-closed"
+      }`}
+    >
+      {sidebarOpen && (
+        <button
+          className="sidebar-backdrop"
+          type="button"
+          aria-label="Close navigation menu"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+      <aside className={`sidebar ${sidebarOpen ? "open" : "closed"}`}>
         <div className="sidebar-brand">
           <div className="brand-mark small">VK</div>
           <div>
@@ -884,7 +916,7 @@ function App() {
           </div>
         </div>
 
-        <nav>
+        <nav id="app-navigation">
           {navGroups.map((group) => (
             <div key={group.title} className="nav-group">
               <div className="nav-title">{group.title}</div>
@@ -895,7 +927,10 @@ function App() {
                   className={`nav-item ${
                     page === item.key ? "active" : ""
                   }`}
-                  onClick={() => setPage(item.key)}
+                  onClick={() => {
+                    setPage(item.key);
+                    closeSidebarOnMobile();
+                  }}
                 >
                   <span className="nav-icon">{item.icon}</span>
                   <span>{item.label}</span>
@@ -914,7 +949,19 @@ function App() {
 
       <main className="main-content">
         <header className="topbar">
-          <div>
+          <div className="topbar-title">
+            <button
+              className="sidebar-toggle"
+              type="button"
+              aria-label={
+                sidebarOpen ? "Hide navigation menu" : "Show navigation menu"
+              }
+              aria-expanded={sidebarOpen}
+              aria-controls="app-navigation"
+              onClick={() => setSidebarOpen((open) => !open)}
+            >
+              <span aria-hidden="true">☰</span>
+            </button>
             <strong>{t(lang, "appTitle")}</strong>
           </div>
 
