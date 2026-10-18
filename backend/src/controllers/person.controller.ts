@@ -276,3 +276,44 @@ export const updatePerson = async (
     });
   }
 };
+
+export const deletePerson = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const id = Number(req.params.id);
+
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid person ID.",
+      });
+    }
+
+    const person = await prisma.person.update({
+      where: { id },
+      data: { isActive: false },
+    });
+
+    return res.json({
+      success: true,
+      message: "Person deactivated successfully.",
+      data: person,
+    });
+  } catch (error: any) {
+    console.error(error);
+
+    if (error.code === "P2025") {
+      return res.status(404).json({
+        success: false,
+        message: "Person not found.",
+      });
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: "Unable to deactivate person.",
+    });
+  }
+};

@@ -3,6 +3,8 @@ import { Router } from "express";
 import {
   getFoodCategories,
   createFoodCategory,
+  updateFoodCategory,
+  deleteFoodCategory,
 } from "../controllers/food-category.controller.js";
 
 import {
@@ -24,6 +26,20 @@ router.post(
   authenticate,
   requirePermission("food.create"),
   createFoodCategory
+);
+
+router.put(
+  "/:id",
+  authenticate,
+  requirePermission("food.edit"),
+  updateFoodCategory
+);
+
+router.delete(
+  "/:id",
+  authenticate,
+  requirePermission("food.delete"),
+  deleteFoodCategory
 );
 
 export default router;

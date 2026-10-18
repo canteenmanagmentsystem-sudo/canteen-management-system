@@ -93,3 +93,112 @@ export const createRateMaster = async (
     });
   }
 };
+
+export const updateRateMaster = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid rate ID.",
+      });
+    }
+
+    const existing = await prisma.rateMaster.findUnique({ where: { id } });
+    if (!existing) {
+      return res.status(404).json({
+        success: false,
+        message: "Rate not found.",
+      });
+    }
+
+    const { foodItemId, rate, effectiveFrom, effectiveTo } = req.body;
+    const finalFoodItemId = foodItemId === undefined
+      ? existing.foodItemId
+      : Number(foodItemId);
+    const finalRate = rate === undefined ? Number(existing.rate) : Number(rate);
+    const finalEffectiveFrom = effectiveFrom === undefined
+      ? existing.effectiveFrom
+      : new Date(effectiveFrom);
+    const finalEffectiveTo = effectiveTo === undefined
+      ? existing.effectiveTo
+      : effectiveTo
+        ? new Date(effectiveTo)
+        : null;
+
+    if (!Number.isFinite(finalRate) || Number.isNaN(finalEffectiveFrom.getTime()) ||
+      (finalEffectiveTo && Number.isNaN(finalEffectiveTo.getTime()))) {
+      return res.status(400).json({
+        success: false,
+        message: "Valid rate and effective dates are required.",
+      });
+    }
+
+    const foodItem = await prisma.foodItem.findUnique({
+      where: { id: finalFoodItemId },
+    });
+    if (!foodItem || !foodItem.isActive) {
+      return res.status(400).json({
+        success: false,
+        message: "Food item does not exist or is inactive.",
+      });
+    }
+
+    const updatedRate = await prisma.rateMaster.update({
+      where: { id },
+      data: {
+        foodItemId: finalFoodItemId,
+        rate: finalRate,
+        effectiveFrom: finalEffectiveFrom,
+        effectiveTo: finalEffectiveTo,
+      },
+      include: { foodItem: true },
+    });
+
+    return res.json({
+      success: true,
+      message: "Rate updated successfully.",
+      data: updatedRate,
+    });
+  } catch (error: any) {
+    console.error(error);
+    if (error.code === "P2025") {
+      return res.status(404).json({
+        success: false,
+        message: "Rate or food item not found.",
+      });
+    }
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update rate.",
+    });
+  }
+};
+
+export const deleteRateMaster = async (
+  req: Request,
+  res: Response
+) => {
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({ success: false, message: "Invalid rate ID." });
+    }
+
+    const rate = await prisma.rateMaster.update({
+      where: { id },
+      data: { isActive: false },
+    });
+
+    return res.json({ success: true, message: "Rate deactivated successfully.", data: rate });
+  } catch (error: any) {
+    console.error(error);
+    if (error.code === "P2025") {
+      return res.status(404).json({ success: false, message: "Rate not found." });
+    }
+    return res.status(500).json({ success: false, message: "Unable to deactivate rate." });
+  }
+};

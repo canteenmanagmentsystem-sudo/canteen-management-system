@@ -4,6 +4,7 @@ import {
   getPersons,
   createPerson,
   updatePerson,
+  deletePerson,
 } from "../controllers/person.controller.js";
 
 import {
@@ -32,6 +33,13 @@ router.put(
   authenticate,
   requirePermission("persons.edit"),
   updatePerson
+);
+
+router.delete(
+  "/:id",
+  authenticate,
+  requirePermission("persons.delete"),
+  deletePerson
 );
 
 export default router;

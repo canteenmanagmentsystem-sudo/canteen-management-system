@@ -6,7 +6,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "dev": "tsx watch src/server.ts",
+    "dev": "prisma migrate deploy && tsx watch src/server.ts",
     "build": "prisma generate && prisma migrate deploy && tsc",
     "start": "node dist/src/server.js",
     "prisma:generate": "prisma generate",
